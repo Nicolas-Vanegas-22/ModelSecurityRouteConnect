@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="55d7314b294d4f1295389e4cf1a8ae6d" Name="Diagram1" ZoomLevel="64" >
+        <EntityTypeShape EntityType="Model1.User" Width="1.5" PointX="8" PointY="3.5" />
+        <EntityTypeShape EntityType="Model1.Rol" Width="1.5" PointX="3.25" PointY="7.5" />
+        <EntityTypeShape EntityType="Model1.UserRol" Width="1.5" PointX="3.375" PointY="3.375" />
+        <EntityTypeShape EntityType="Model1.Person" Width="1.5" PointX="5.75" PointY="1.375" />
+        <EntityTypeShape EntityType="Model1.Permission" Width="1.5" PointX="0.5" PointY="9.375" />
+        <EntityTypeShape EntityType="Model1.RolPermission" Width="1.5" PointX="0.875" PointY="5.625" />
+        <EntityTypeShape EntityType="Model1.Destination" Width="1.5" PointX="15.75" PointY="5.625" />
+        <EntityTypeShape EntityType="Model1.Activity" Width="1.5" PointX="11.875" PointY="5.625" />
+        <EntityTypeShape EntityType="Model1.Form" Width="1.5" PointX="5.75" PointY="5.375" />
+        <EntityTypeShape EntityType="Model1.Module" Width="1.5" PointX="7.625" PointY="11.625" />
+        <EntityTypeShape EntityType="Model1.FormModule" Width="1.5" PointX="6" PointY="8.75" />
+        <EntityTypeShape EntityType="Model1.Payment" Width="1.5" PointX="8.125" PointY="8" />
+        <EntityTypeShape EntityType="Model1.RolFormPermission" Width="1.5" PointX="3.875" PointY="10.875" />
+        <EntityTypeShape EntityType="Model1.ChangeLog" Width="1.5" PointX="10.875" PointY="9.875" FillColor="255, 192, 192" />
+        <AssociationConnector Association="Model1.UserRolUser" />
+        <AssociationConnector Association="Model1.FormModuleForm" ></AssociationConnector>
+        <AssociationConnector Association="Model1.PersonUser" />
+        <AssociationConnector Association="Model1.UserRolRol" />
+        <AssociationConnector Association="Model1.RolPermissionRol" />
+        <AssociationConnector Association="Model1.RolPermissionPermission" />
+        <EntityTypeShape EntityType="Model1.UserActivity" Width="1.5" PointX="10.25" PointY="2.625" />
+        <AssociationConnector Association="Model1.UserActivityUser" />
+        <AssociationConnector Association="Model1.UserActivityActivity" />
+        <AssociationConnector Association="Model1.FormModuleModule" />
+        <AssociationConnector Association="Model1.RolFormPermissionRol" />
+        <AssociationConnector Association="Model1.RolFormPermissionForm" />
+        <AssociationConnector Association="Model1.RolFormPermissionPermission" />
+        <EntityTypeShape EntityType="Model1.DestinationActivity" Width="1.5" PointX="13.875" PointY="9.75" />
+        <AssociationConnector Association="Model1.DestinationActivityDestination" />
+        <AssociationConnector Association="Model1.DestinationActivityActivity" />
+        <AssociationConnector Association="Model1.UserActivityPayment" />
+        <AssociationConnector Association="Model1.UserPayment" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

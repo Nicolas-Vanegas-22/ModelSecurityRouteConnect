@@ -1,6 +1,6 @@
 using System;
 
-namespace Entity.Model
+namespace Entity.DTO
 {
     public class ActivityDTO
     {

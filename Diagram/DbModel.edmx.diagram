@@ -18,7 +18,7 @@
         <EntityTypeShape EntityType="Model1.FormModule" Width="1.5" PointX="6" PointY="8.75" />
         <EntityTypeShape EntityType="Model1.Payment" Width="1.5" PointX="8.125" PointY="8" />
         <EntityTypeShape EntityType="Model1.RolFormPermission" Width="1.5" PointX="3.875" PointY="10.875" />
-        <EntityTypeShape EntityType="Model1.ChangeLog" Width="1.5" PointX="10.875" PointY="9.875" FillColor="255, 192, 192" />
+        <EntityTypeShape EntityType="Model1.ChangeLog" Width="1.5" PointX="1" PointY="1.75" FillColor="255, 192, 192" />
         <AssociationConnector Association="Model1.UserRolUser" />
         <AssociationConnector Association="Model1.FormModuleForm" ></AssociationConnector>
         <AssociationConnector Association="Model1.PersonUser" />

@@ -4,6 +4,8 @@ namespace Entity.Model
 {
     public class User
     {
+        public readonly object userId;
+
         public int UserId { get; set; }
         public string Username { get; set; }
         public string Email  { get; set; }
@@ -11,5 +13,6 @@ namespace Entity.Model
         public string Password { get; set; }
         public string DeleteAt { get; set; }
         public string CreateAt { get; set; }
+        public string Description { get; set; }
     }
 }

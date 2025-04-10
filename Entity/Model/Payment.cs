@@ -9,5 +9,6 @@ namespace Entity.Model
         public decimal Amount { get; set; }
         public string Activity { get; set; }
         public DateTime PaymentDate { get; set; }
+        public string Activity { get; set; }
     }
 }

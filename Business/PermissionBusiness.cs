@@ -22,107 +22,109 @@ namespace Business
         }
 
         // Método para obtener todos los Permission como DTOs
-        public async Task<IEnumerable<PermissionDto>> GetAllPermissionAsync()
+        public async Task<IEnumerable<PermissionDTO>> GetAllPermissionAsync()
         {
             try
             {
                 var permissions = await _permissionData.GetAllAsync();
-                var permissionDTOs = new List<PermissionDto>();
+                var permissionDTOs = new List<PermissionDTO>();
 
-                foreach (var person in persons)
+                foreach (var permission in permissions)
                 {
-                    personDTOs.Add(new PersonDto
+                    permissionDTOs.Add(new PermissionDTO
                     {
-                        PersonsId = person.PersonId,
-                        LastName = person.LastName,
-                        FirstName = person.FirstName
+                        permissionId = permission.PermissionId,
+                        PermissionName = permission.PermissionName,
+                        Description = permission.Description
                     });
                 }
 
-                return personDTOs;
+                return permissionDTOs;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener todos los persons");
-                throw new ExternalServiceException("Base de datos", "Error al recuperar la lista de persons", ex);
+                _logger.LogError(ex, "Error al obtener todos los permission");
+                throw new ExternalServiceException("Base de datos", "Error al recuperar la lista de permissions", ex);
             }
         }
 
-        // Método para obtener un persons por ID como DTO
-        public async Task<PersonDto> GetPersonByIdAsync(int id)
+        // Método para obtener un permissions por ID como DTO
+        public async Task<PermissionDTO> GetPermissionByIdAsync(int id)
         {
             if (id <= 0)
             {
-                _logger.LogWarning("Se intentó obtener un person con ID inválido: {personId}", id);
-                throw new Utilities.Exceptions.ValidationException("id", "El ID del person debe ser mayor que cero");
+                _logger.LogWarning("Se intentó obtener un permission con ID inválido: {personId}", id);
+                throw new Utilities.Exceptions.ValidationException("id", "El ID del permission debe ser mayor que cero");
             }
 
             try
             {
-                var person = await _personData.GetByIdAsync(id);
-                if (person == null)
+                var permission = await _permissionData.GetByIdAsync(id);
+                if (permission == null)
                 {
-                    _logger.LogInformation("No se encontró ningún Person con ID: {PersonId}", id);
-                    throw new EntityNotFoundException("Person", id);
+                    _logger.LogInformation("No se encontró ningún Permission con ID: {PermissionId}", id);
+                    throw new EntityNotFoundException("Permission", id);
                 }
 
-                return new PersonDto
+                return new PermissionDTO
                 {
-                    PersonsId = person.PersonId,
-                    LastName = person.LastName,
-                    FirstName = person.FirstName
+                    permissionId = permission.PermissionId,
+                    PermissionName = permission.PermissionName,
+                    Description = permission.Description
                 };
             }
 
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener el Person con ID: {PersonId}", id);
-                throw new ExternalServiceException("Base de datos", $"Error al recuperar el rol con ID {id}", ex);
+                _logger.LogError(ex, "Error al obtener el Permission con ID: {PermissionId}", id);
+                throw new ExternalServiceException("Base de datos", $"Error al recuperar el permission con ID {id}", ex);
             }
         }
 
-        // Método para crear un Person desde un DTO
-        public async Task<PersonDto> CreatePersonAsync(PersonDto PersonDto)
+        // Método para crear un Permission desde un DTO
+        public async Task<PermissionDTO> CreatePermissionAsync(PermissionDTO PermissionDTO)
         {
             try
             {
-                ValidatPerson(PersonDto);
+                ValidatPermission(PermissionDTO);
 
-                var person = new Person
+                var permission = new Permission
                 {
-                    PersonId = PersonDto.PersonsId,
-                    LastName = PersonDto.LastName,
-                    FirstName = PersonDto.FirstName
+                    PermissionId = PermissionDTO.permissionId,
+                    PermissionName = PermissionDTO.PermissionName,
+                    Description = PermissionDTO.Description
                 };
 
-                var personCreado = await _personData.CreateAsync(person);
+                var createdPermission = await _permissionData.CreateAsync(permission);
 
-                return new PersonDto
+                return new PermissionDTO
                 {
-                    PersonsId = personCreado.PersonId,
-                    LastName = personCreado.LastName,
-                    FirstName = personCreado.FirstName
+                    permissionId = createdPermission.PermissionId,
+                    PermissionName = createdPermission.PermissionName,
+                    Description = createdPermission.Description
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear nuevo user: {PersonNombre}", PersonDto?.PersonName ?? "null");
-                throw new ExternalServiceException("Base de datos", "Error al crear el Person", ex);
+                _logger.LogError(ex, "Error al crear nuevo Permission: {PermissionNombre}", PermissionDTO?.PermissionName ?? "null");
+                throw new ExternalServiceException("Base de datos", "Error al crear el Permission", ex);
             }
         }
 
-        // Método para validar el Persons
-        private void ValidatPerson(PersonDto PersonDto)
+        private static object GetPermissionCreado() => GetPermissionCreado();
+
+        // Método para validar el Permissions
+        private void ValidatPermission(PermissionDTO PermissionDto)
         {
-            if (PersonDto == null)
+            if (PermissionDto == null)
             {
-                throw new Utilities.Exceptions.ValidationException("El objeto Person no puede ser nulo");
+                throw new Utilities.Exceptions.ValidationException("El objeto Permission no puede ser nulo");
             }
 
-            if (string.IsNullOrWhiteSpace((string?)PersonDto.PersonName))
+            if (string.IsNullOrWhiteSpace((string?)PermissionDto.PermissionName))
             {
                 _logger.LogWarning("Se intentó crear/actualizar un Person con Name vacío");
-                throw new Utilities.Exceptions.ValidationException("Name", "El Name del Person es obligatorio");
+                throw new Utilities.Exceptions.ValidationException("Name", "El Name del permission es obligatorio");
             }
         }
     }

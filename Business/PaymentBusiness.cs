@@ -31,7 +31,7 @@ namespace Business
 
                 foreach (var payment in Payments)
                 {
-                    PaymentDTO.Add(new PaymentDTO
+                    PaymentsDTO.Add(new PaymentDTO
                     {
                         PaymentId = payment.PaymentId,
                         PaymentMethod = payment.PaymentMethod,
@@ -39,7 +39,7 @@ namespace Business
                     });
                 }
 
-                return PaymentDTO;
+                return PaymentsDTO;
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace Business
                 var payment = new Payment
                 {
                     PaymentId = PaymentDto.PaymentId,
-                    PaymentMethod = payment.PaymentMethod,
+                    PaymentMethod = PaymentDto.PaymentMethod,
                     Description = PaymentDto.Description
                 };
 
@@ -99,14 +99,14 @@ namespace Business
 
                 return new PaymentDTO
                 {
-                    PaymentId = paymentCreado.UserId,
+                    PaymentId = paymentCreado.PaymentId,
                     PaymentMethod = paymentCreado.PaymentMethod,
                     Description = paymentCreado.Description
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear nuevo Payment: {RolNombre}", PaymentDto?.Paymentmame ?? "null");
+                _logger.LogError(ex, "Error al crear nuevo Payment: {RolNombre}", PaymentDto?.PaymentName ?? "null");
                 throw new ExternalServiceException("Base de datos", "Error al crear el Payment", ex);
             }
         }

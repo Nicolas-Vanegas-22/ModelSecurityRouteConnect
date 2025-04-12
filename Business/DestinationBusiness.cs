@@ -19,7 +19,7 @@ namespace Business
             _logger = logger;
         }
 
-        // Método para obtener todos los destinos como DTOs
+        // Método para obtener todos los destinos comoo DTOs
         public async Task<IEnumerable<DestinationDTO>> GetAllDestinationsAsync()
         {
             try

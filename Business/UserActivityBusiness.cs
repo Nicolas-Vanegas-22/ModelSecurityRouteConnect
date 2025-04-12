@@ -2,40 +2,39 @@
 using Entity.DTO;
 using Entity.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Server;
 using Utilities.Exceptions;
 
 namespace Business
 {
-    public class UserActivityBusiness
+    public class UserActivity
     {
-        private readonly UserActivityBusinessData _userActivityBusinessData;
+        private readonly UserActivityData _userActivityData;
         private readonly ILogger _logger;
 
-        public UserActivityBusiness(UserActivityBusinessData userActivityBusinessData, ILogger logger)
+        public UserActivity(UserActivityData userActivityData, ILogger logger)
         {
-            _userActivityBusinessData = userActivityBusinessData;
+            _userActivityData = userActivityData;
             _logger = logger;
         }
 
-        // Método para obtener todas las actividades de usuario como DTOs
-        public async Task<IEnumerable<UserActivityBusinessDTO>> GetAllUserActivityBusinessAsync()
+        // Obtener todas las actividades de usuario
+        public async Task<IEnumerable<UserActivityDTO>> GetAllAsync()
         {
             try
             {
-                var userActivityBusinessList = await _userActivityBusinessData.GetAllAsync();
-                var userActivityBusinessDTOList = new List<UserActivityBusinessDTO>();
+                var userActivities = await _userActivityData.GetAllAsync();
+                var dtoList = new List<UserActivityDTO>();
 
-                foreach (var userActivityBusiness in userActivityBusinessList)
+                foreach (var activity in userActivities)
                 {
-                    userActivityBusinessDTOList.Add(new UserActivityBusinessDTO
+                    dtoList.Add(new UserActivityDTO
                     {
-                        UserActivityBusinessId = userActivityBusiness.UserActivityBusinessId,
-                        Name = userActivityBusiness.Name
+                        UserActivityId = activity.UserActivityId,
+                        Name = activity.Name
                     });
                 }
 
-                return userActivityBusinessDTOList;
+                return dtoList;
             }
             catch (Exception ex)
             {
@@ -44,77 +43,76 @@ namespace Business
             }
         }
 
-        // Método para obtener una actividad de usuario por ID como DTO
-        public async Task<UserActivityBusinessDTO> GetUserActivityBusinessByIdAsync(int id)
+        // Obtener una actividad por ID
+        public async Task<UserActivityDTO> GetByIdAsync(int id)
         {
             if (id <= 0)
             {
-                _logger.LogWarning("Se intentó obtener una actividad con ID inválido: {UserActivityBusinessId}", id);
-                throw new Utilities.Exceptions.ValidationException("id", "El ID de la actividad debe ser mayor que cero");
+                _logger.LogWarning("Se intentó obtener una actividad con ID inválido: {UserActivityId}", id);
+                throw new ValidationException("id", "El ID de la actividad debe ser mayor que cero");
             }
 
             try
             {
-                var userActivityBusiness = await _userActivityBusinessData.GetByIdAsync(id);
-                if (userActivityBusiness == null)
+                var activity = await _userActivityData.GetByIdAsync(id);
+                if (activity == null)
                 {
-                    _logger.LogInformation("No se encontró ninguna actividad con ID: {UserActivityBusinessId}", id);
-                    throw new EntityNotFoundException("UserActivityBusiness", id);
+                    _logger.LogInformation("No se encontró ninguna actividad con ID: {UserActivityId}", id);
+                    throw new EntityNotFoundException("UserActivity", id);
                 }
 
-                return new UserActivityBusinessDTO
+                return new UserActivityDTO
                 {
-                    UserActivityBusinessId = userActivityBusiness.UserActivityBusinessId,
-                    Name = userActivityBusiness.Name,
+                    UserActivityId = activity.UserActivityId,
+                    Name = activity.Name
                 };
             }
-
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener la actividad de usuario con ID: {UserActivityBusinessId}", id);
+                _logger.LogError(ex, "Error al obtener la actividad de usuario con ID: {UserActivityId}", id);
                 throw new ExternalServiceException("Base de datos", $"Error al recuperar la actividad con ID {id}", ex);
             }
         }
 
-        // Método para crear una actividad de usuario desde un DTO
-        public async Task<UserActivityBusinessDTO> CreateUserActivityBusinessAsync(UserActivityBusinessDTO userActivityBusinessDto)
+        // Crear nueva actividad
+        public async Task<UserActivityDTO> CreateAsync(UserActivityDTO dto)
         {
             try
             {
-                ValidateUserActivityBusiness(userActivityBusinessDto);
+                Validate(dto);
 
-                var userActivityBusiness = new UserActivityBusiness
+                var entity = new Entity.Model.UserActivity
                 {
-                    Name = userActivityBusinessDto.Name,
+                    Name = dto.Name
                 };
 
-                var userActivityBusinessCreado = await _userActivityBusinessData.CreateAsync(userActivityBusiness);
+                var created = await _userActivityData.CreateAsync(entity);
 
-                return new UserActivityBusinessDTO
+                return new UserActivityDTO
                 {
-                    UserActivityBusinessId = userActivityBusinessCreado.UserActivityBusinessId,
-                    Name = userActivityBusinessCreado.Name,
+                    UserActivityId = created.UserActivityId,
+                    Name = created.Name
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear nueva actividad de usuario: {Name}", userActivityBusinessDto?.Name ?? "null");
+                _logger.LogError(ex, "Error al crear nueva actividad de usuario: {Name}", dto?.Name ?? "null");
                 throw new ExternalServiceException("Base de datos", "Error al crear la actividad", ex);
             }
         }
 
-        // Método para validar el DTO
-        private void ValidateUserActivityBusiness(UserActivityBusinessDTO userActivityBusinessDto)
+        // Validar DTO
+        private void Validate(UserActivityDTO dto)
         {
-            if (userActivityBusinessDto == null)
+            if (dto == null)
             {
-                throw new Utilities.Exceptions.ValidationException("El objeto actividad no puede ser nulo");
+                throw new ValidationException("El objeto actividad no puede ser nulo");
             }
 
-            if (string.IsNullOrWhiteSpace(userActivityBusinessDto.Name))
+            if (string.IsNullOrWhiteSpace(dto.Name))
             {
                 _logger.LogWarning("Se intentó crear/actualizar una actividad con Name vacío");
-                throw new Utilities.Exceptions.ValidationException("Name", "El Name de la actividad es obligatorio");
+                throw new ValidationException("Name", "El Name de la actividad es obligatorio");
             }
         }
     }

@@ -2,120 +2,110 @@
 using Entity.DTO;
 using Entity.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Server;
 using Utilities.Exceptions;
 
 namespace Business
 {
-    public class RolPermissionBusiness
+    public class RolPermission
     {
-        private readonly RolPermissionBusinessData _rolPermissionBusinessData;
+        private readonly RolPermissionData _rolPermissionData;
         private readonly ILogger _logger;
 
-        public RolPermissionBusiness(RolPermissionBusinessData rolPermissionBusinessData, ILogger logger)
+        public RolPermission(RolPermissionData rolPermissionData, ILogger logger)
         {
-            _rolPermissionBusinessData = rolPermissionBusinessData;
+            _rolPermissionData = rolPermissionData;
             _logger = logger;
         }
 
-        // Método para obtener todos los permisos de rol como DTOs
-        public async Task<IEnumerable<RolPermissionBusinessDTO>> GetAllRolPermissionBusinessAsync()
+        // Obtener todos los permisos
+        public async Task<IEnumerable<RolPermissionDTO>> GetAllAsync()
         {
             try
             {
-                var rolPermissionBusinessList = await _rolPermissionBusinessData.GetAllAsync();
-                var rolPermissionBusinessDTOList = new List<RolPermissionBusinessDTO>();
-
-                foreach (var rolPermissionBusiness in rolPermissionBusinessList)
+                var permissions = await _rolPermissionData.GetAllAsync();
+                return permissions.Select(p => new RolPermissionDTO
                 {
-                    rolPermissionBusinessDTOList.Add(new RolPermissionBusinessDTO
-                    {
-                        RolPermissionBusinessId = rolPermissionBusiness.RolPermissionBusinessId,
-                        Name = rolPermissionBusiness.Name
-                    });
-                }
-
-                return rolPermissionBusinessDTOList;
+                    RolPermissionId = p.RolPermissionId,
+                    Name = p.Name
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener todos los permisos de rol");
-                throw new ExternalServiceException("Base de datos", "Error al recuperar la lista de permisos", ex);
+                throw new ExternalServiceException("Base de datos", "Error al recuperar los permisos", ex);
             }
         }
 
-        // Método para obtener un permiso de rol por ID como DTO
-        public async Task<RolPermissionBusinessDTO> GetRolPermissionBusinessByIdAsync(int id)
+        // Obtener permiso por ID
+        public async Task<RolPermissionDTO> GetByIdAsync(int id)
         {
             if (id <= 0)
             {
-                _logger.LogWarning("Se intentó obtener un permiso con ID inválido: {RolPermissionBusinessId}", id);
-                throw new Utilities.Exceptions.ValidationException("id", "El ID del permiso debe ser mayor que cero");
+                _logger.LogWarning("ID inválido: {RolPermissionId}", id);
+                throw new ValidationException("id", "El ID del permiso debe ser mayor que cero");
             }
 
             try
             {
-                var rolPermissionBusiness = await _rolPermissionBusinessData.GetByIdAsync(id);
-                if (rolPermissionBusiness == null)
+                var permission = await _rolPermissionData.GetByIdAsync(id);
+                if (permission == null)
                 {
-                    _logger.LogInformation("No se encontró ningún permiso con ID: {RolPermissionBusinessId}", id);
-                    throw new EntityNotFoundException("RolPermissionBusiness", id);
+                    _logger.LogInformation("Permiso no encontrado: {RolPermissionId}", id);
+                    throw new EntityNotFoundException("RolPermission", id);
                 }
 
-                return new RolPermissionBusinessDTO
+                return new RolPermissionDTO
                 {
-                    RolPermissionBusinessId = rolPermissionBusiness.RolPermissionBusinessId,
-                    Name = rolPermissionBusiness.Name,
+                    RolPermissionId = permission.RolPermissionId,
+                    Name = permission.Name
                 };
             }
-
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener el permiso con ID: {RolPermissionBusinessId}", id);
+                _logger.LogError(ex, "Error al obtener el permiso con ID: {RolPermissionId}", id);
                 throw new ExternalServiceException("Base de datos", $"Error al recuperar el permiso con ID {id}", ex);
             }
         }
 
-        // Método para crear un permiso de rol desde un DTO
-        public async Task<RolPermissionBusinessDTO> CreateRolPermissionBusinessAsync(RolPermissionBusinessDTO rolPermissionBusinessDto)
+        // Crear nuevo permiso
+        public async Task<RolPermissionDTO> CreateAsync(RolPermissionDTO dto)
         {
             try
             {
-                ValidateRolPermissionBusiness(rolPermissionBusinessDto);
+                Validate(dto);
 
-                var rolPermissionBusiness = new RolPermissionBusiness
+                var entity = new Entity.Model.RolPermission
                 {
-                    Name = rolPermissionBusinessDto.Name,
+                    Name = dto.Name
                 };
 
-                var rolPermissionBusinessCreado = await _rolPermissionBusinessData.CreateAsync(rolPermissionBusiness);
+                var created = await _rolPermissionData.CreateAsync(entity);
 
-                return new RolPermissionBusinessDTO
+                return new RolPermissionDTO
                 {
-                    RolPermissionBusinessId = rolPermissionBusinessCreado.RolPermissionBusinessId,
-                    Name = rolPermissionBusinessCreado.Name,
+                    RolPermissionId = created.RolPermissionId,
+                    Name = created.Name
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear nuevo permiso de rol: {Name}", rolPermissionBusinessDto?.Name ?? "null");
+                _logger.LogError(ex, "Error al crear nuevo permiso: {Name}", dto?.Name ?? "null");
                 throw new ExternalServiceException("Base de datos", "Error al crear el permiso", ex);
             }
         }
 
-        // Método para validar el DTO
-        private void ValidateRolPermissionBusiness(RolPermissionBusinessDTO rolPermissionBusinessDto)
+        // Validación
+        private void Validate(RolPermissionDTO dto)
         {
-            if (rolPermissionBusinessDto == null)
-            {
-                throw new Utilities.Exceptions.ValidationException("El objeto permiso no puede ser nulo");
-            }
+            if (dto == null)
+                throw new ValidationException("El objeto permiso no puede ser nulo");
 
-            if (string.IsNullOrWhiteSpace(rolPermissionBusinessDto.Name))
+            if (string.IsNullOrWhiteSpace(dto.Name))
             {
-                _logger.LogWarning("Se intentó crear/actualizar un permiso con Name vacío");
-                throw new Utilities.Exceptions.ValidationException("Name", "El Name del permiso es obligatorio");
+                _logger.LogWarning("Intento de crear/actualizar permiso con Name vacío");
+                throw new ValidationException("Name", "El Name del permiso es obligatorio");
             }
         }
     }
 }
+

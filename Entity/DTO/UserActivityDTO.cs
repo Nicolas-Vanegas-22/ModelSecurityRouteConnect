@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Entity.DTO
 {
-    internal class UserActivityDTO
+    public class UserActivityDTO
     {
+        public int UserActivityId { get; set; }
+        public string Name { get; set; }
     }
 }

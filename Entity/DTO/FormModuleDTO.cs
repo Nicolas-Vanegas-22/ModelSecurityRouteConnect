@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Entity.DTO
 {
-    internal class FormModuleDTO
+    public class FormModuleDTO
     {
+        public int FormModuleId { get; set; }
+        public string Name { get; set; }
     }
 }

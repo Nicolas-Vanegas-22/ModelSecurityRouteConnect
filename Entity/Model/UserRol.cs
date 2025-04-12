@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Entity.DTO
+namespace Entity.Model
 {
-    internal class UserRolBusinessDT_O
+    public class UserRol
     {
+        public int UserRolId { get; set; }
+        public string Name { get; set; }
     }
 }

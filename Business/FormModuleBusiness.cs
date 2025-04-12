@@ -2,119 +2,108 @@
 using Entity.DTO;
 using Entity.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Server;
 using Utilities.Exceptions;
 
 namespace Business
 {
-    public class FormModuleBusiness
+    public class FormModule
     {
-        private readonly FormModuleBusinessData _formModuleBusinessData;
+        private readonly FormModuleData _formModuleData;
         private readonly ILogger _logger;
 
-        public FormModuleBusiness(FormModuleBusinessData formModuleBusinessData, ILogger logger)
+        public FormModule(FormModuleData formModuleData, ILogger logger)
         {
-            _formModuleBusinessData = formModuleBusinessData;
+            _formModuleData = formModuleData;
             _logger = logger;
         }
 
-        // Método para obtener todos los módulos de formulario como DTOs
-        public async Task<IEnumerable<FormModuleBusinessDTO>> GetAllFormModuleBusinessAsync()
+        // Obtener todos los módulos de formulario
+        public async Task<IEnumerable<FormModuleDTO>> GetAllAsync()
         {
             try
             {
-                var formModuleBusinessList = await _formModuleBusinessData.GetAllAsync();
-                var formModuleBusinessDTOList = new List<FormModuleBusinessDTO>();
-
-                foreach (var formModuleBusiness in formModuleBusinessList)
+                var modules = await _formModuleData.GetAllAsync();
+                return modules.Select(m => new FormModuleDTO
                 {
-                    formModuleBusinessDTOList.Add(new FormModuleBusinessDTO
-                    {
-                        FormModuleBusinessId = formModuleBusiness.FormModuleBusinessId,
-                        Name = formModuleBusiness.Name
-                    });
-                }
-
-                return formModuleBusinessDTOList;
+                    FormModuleId = m.FormModuleId,
+                    Name = m.Name
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener todos los módulos de formulario");
-                throw new ExternalServiceException("Base de datos", "Error al recuperar la lista de módulos", ex);
+                throw new ExternalServiceException("Base de datos", "Error al recuperar los módulos", ex);
             }
         }
 
-        // Método para obtener un módulo por ID como DTO
-        public async Task<FormModuleBusinessDTO> GetFormModuleBusinessByIdAsync(int id)
+        // Obtener uno por ID
+        public async Task<FormModuleDTO> GetByIdAsync(int id)
         {
             if (id <= 0)
             {
-                _logger.LogWarning("Se intentó obtener un módulo con ID inválido: {FormModuleBusinessId}", id);
-                throw new Utilities.Exceptions.ValidationException("id", "El ID del módulo debe ser mayor que cero");
+                _logger.LogWarning("ID inválido: {FormModuleId}", id);
+                throw new ValidationException("id", "El ID del módulo debe ser mayor que cero");
             }
 
             try
             {
-                var formModuleBusiness = await _formModuleBusinessData.GetByIdAsync(id);
-                if (formModuleBusiness == null)
+                var module = await _formModuleData.GetByIdAsync(id);
+                if (module == null)
                 {
-                    _logger.LogInformation("No se encontró ningún módulo con ID: {FormModuleBusinessId}", id);
-                    throw new EntityNotFoundException("FormModuleBusiness", id);
+                    _logger.LogInformation("No se encontró el módulo: {FormModuleId}", id);
+                    throw new EntityNotFoundException("FormModule", id);
                 }
 
-                return new FormModuleBusinessDTO
+                return new FormModuleDTO
                 {
-                    FormModuleBusinessId = formModuleBusiness.FormModuleBusinessId,
-                    Name = formModuleBusiness.Name,
+                    FormModuleId = module.FormModuleId,
+                    Name = module.Name
                 };
             }
-
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener el módulo con ID: {FormModuleBusinessId}", id);
+                _logger.LogError(ex, "Error al obtener el módulo con ID: {FormModuleId}", id);
                 throw new ExternalServiceException("Base de datos", $"Error al recuperar el módulo con ID {id}", ex);
             }
         }
 
-        // Método para crear un módulo desde un DTO
-        public async Task<FormModuleBusinessDTO> CreateFormModuleBusinessAsync(FormModuleBusinessDTO formModuleBusinessDto)
+        // Crear nuevo módulo
+        public async Task<FormModuleDTO> CreateAsync(FormModuleDTO dto)
         {
             try
             {
-                ValidateFormModuleBusiness(formModuleBusinessDto);
+                Validate(dto);
 
-                var formModuleBusiness = new FormModuleBusiness
+                var entity = new Entity.Model.FormModule
                 {
-                    Name = formModuleBusinessDto.Name,
+                    Name = dto.Name
                 };
 
-                var formModuleBusinessCreado = await _formModuleBusinessData.CreateAsync(formModuleBusiness);
+                var created = await _formModuleData.CreateAsync(entity);
 
-                return new FormModuleBusinessDTO
+                return new FormModuleDTO
                 {
-                    FormModuleBusinessId = formModuleBusinessCreado.FormModuleBusinessId,
-                    Name = formModuleBusinessCreado.Name,
+                    FormModuleId = created.FormModuleId,
+                    Name = created.Name
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear nuevo módulo de formulario: {Name}", formModuleBusinessDto?.Name ?? "null");
+                _logger.LogError(ex, "Error al crear módulo: {Name}", dto?.Name ?? "null");
                 throw new ExternalServiceException("Base de datos", "Error al crear el módulo", ex);
             }
         }
 
-        // Método para validar el DTO
-        private void ValidateFormModuleBusiness(FormModuleBusinessDTO formModuleBusinessDto)
+        // Validación
+        private void Validate(FormModuleDTO dto)
         {
-            if (formModuleBusinessDto == null)
-            {
-                throw new Utilities.Exceptions.ValidationException("El objeto módulo no puede ser nulo");
-            }
+            if (dto == null)
+                throw new ValidationException("El objeto módulo no puede ser nulo");
 
-            if (string.IsNullOrWhiteSpace(formModuleBusinessDto.Name))
+            if (string.IsNullOrWhiteSpace(dto.Name))
             {
-                _logger.LogWarning("Se intentó crear/actualizar un módulo con Name vacío");
-                throw new Utilities.Exceptions.ValidationException("Name", "El Name del módulo es obligatorio");
+                _logger.LogWarning("Intento de crear módulo con Name vacío");
+                throw new ValidationException("Name", "El Name del módulo es obligatorio");
             }
         }
     }

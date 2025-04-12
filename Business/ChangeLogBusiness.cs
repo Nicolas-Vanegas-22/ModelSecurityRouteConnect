@@ -7,113 +7,114 @@ using Utilities.Exceptions;
 
 namespace Business
 {
-    public class ChangeLogBusiness
+    public class ChangeLog
     {
-        private readonly ChangeLogBusinessData _changeLogBusinessData;
+        private readonly ChangeLogData _changeLogData;
         private readonly ILogger _logger;
 
-        public ChangeLogBusiness(ChangeLogBusinessData changeLogBusinessData, ILogger logger)
+        public ChangeLog(ChangeLogData changeLogData, ILogger logger)
         {
-            _changeLogBusinessData = changeLogBusinessData;
+            _changeLogData = changeLogData;
             _logger = logger;
         }
 
-        // Método para obtener todos los registros de cambios como DTOs
-        public async Task<IEnumerable<ChangeLogBusinessDTO>> GetAllChangeLogBusinessAsync()
+        // Obtener todos los registros
+        public async Task<IEnumerable<ChangeLogDTO>> GetAllAsync()
         {
             try
             {
-                var changeLogBusinessList = await _changeLogBusinessData.GetAllAsync();
-                var changeLogBusinessDTOList = new List<ChangeLogBusinessDTO>();
-
-                foreach (var changeLogBusiness in changeLogBusinessList)
+                var logs = await _changeLogData.GetAllAsync();
+                return logs.Select(l => new ChangeLogDTO
                 {
-                    changeLogBusinessDTOList.Add(new ChangeLogBusinessDTO
-                    {
-                        ChangeLogBusinessId = changeLogBusiness.ChangeLogBusinessId,
-                        Name = changeLogBusiness.Name
-                    });
-                }
-
-                return changeLogBusinessDTOList;
+                    ChangeLogId = l.ChangeLogId,
+                    Description = l.Description,
+                    ChangeDate = l.ChangeDate
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener todos los registros de cambios");
-                throw new ExternalServiceException("Base de datos", "Error al recuperar la lista de cambios", ex);
+                _logger.LogError(ex, "Error al obtener todos los cambios");
+                throw new ExternalServiceException("Base de datos", "Error al recuperar los logs de cambios", ex);
             }
         }
 
-        // Método para obtener un registro de cambio por ID como DTO
-        public async Task<ChangeLogBusinessDTO> GetChangeLogBusinessByIdAsync(int id)
+        // Obtener por ID
+        public async Task<ChangeLogDTO> GetByIdAsync(int id)
         {
             if (id <= 0)
             {
-                _logger.LogWarning("Se intentó obtener un registro de cambio con ID inválido: {ChangeLogBusinessId}", id);
-                throw new Utilities.Exceptions.ValidationException("id", "El ID del registro debe ser mayor que cero");
+                _logger.LogWarning("ID inválido: {ChangeLogId}", id);
+                throw new ValidationException("id", "El ID debe ser mayor que cero");
             }
 
             try
             {
-                var changeLogBusiness = await _changeLogBusinessData.GetByIdAsync(id);
-                if (changeLogBusiness == null)
+                var log = await _changeLogData.GetByIdAsync(id);
+                if (log == null)
                 {
-                    _logger.LogInformation("No se encontró ningún registro con ID: {ChangeLogBusinessId}", id);
-                    throw new EntityNotFoundException("ChangeLogBusiness", id);
+                    _logger.LogInformation("Cambio no encontrado: {ChangeLogId}", id);
+                    throw new EntityNotFoundException("ChangeLog", id);
                 }
 
-                return new ChangeLogBusinessDTO
+                return new ChangeLogDTO
                 {
-                    ChangeLogBusinessId = changeLogBusiness.ChangeLogBusinessId,
-                    Name = changeLogBusiness.Name,
+                    ChangeLogId = log.ChangeLogId,
+                    Description = log.Description,
+                    ChangeDate = log.ChangeDate
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener el registro de cambio con ID: {ChangeLogBusinessId}", id);
-                throw new ExternalServiceException("Base de datos", $"Error al recuperar el registro con ID {id}", ex);
+                _logger.LogError(ex, "Error al obtener el cambio con ID: {ChangeLogId}", id);
+                throw new ExternalServiceException("Base de datos", $"Error al recuperar el log con ID {id}", ex);
             }
         }
 
-        // Método para crear un registro de cambio desde un DTO
-        public async Task<ChangeLogBusinessDTO> CreateChangeLogBusinessAsync(ChangeLogBusinessDTO changeLogBusinessDto)
+        // Crear nuevo cambio
+        public async Task<ChangeLogDTO> CreateAsync(ChangeLogDTO dto)
         {
             try
             {
-                ValidateChangeLogBusiness(changeLogBusinessDto);
+                Validate(dto);
 
-                var changeLogBusiness = new ChangeLogBusiness
+                var entity = new Entity.Model.ChangeLog
                 {
-                    Name = changeLogBusinessDto.Name,
+                    Description = dto.Description,
+                    ChangeDate = dto.ChangeDate
                 };
 
-                var created = await _changeLogBusinessData.CreateAsync(changeLogBusiness);
+                var created = await _changeLogData.CreateAsync(entity);
 
-                return new ChangeLogBusinessDTO
+                return new ChangeLogDTO
                 {
-                    ChangeLogBusinessId = created.ChangeLogBusinessId,
-                    Name = created.Name,
+                    ChangeLogId = created.ChangeLogId,
+                    Description = created.Description,
+                    ChangeDate = created.ChangeDate
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear nuevo registro de cambio: {Name}", changeLogBusinessDto?.Name ?? "null");
-                throw new ExternalServiceException("Base de datos", "Error al crear el registro", ex);
+                _logger.LogError(ex, "Error al crear log de cambio: {Description}", dto?.Description ?? "null");
+                throw new ExternalServiceException("Base de datos", "Error al crear el registro de cambio", ex);
             }
         }
 
-        // Método para validar el DTO
-        private void ValidateChangeLogBusiness(ChangeLogBusinessDTO changeLogBusinessDto)
+        // Validación
+        private void Validate(ChangeLogDTO dto)
         {
-            if (changeLogBusinessDto == null)
+            if (dto == null)
+                throw new ValidationException("El objeto cambio no puede ser nulo");
+
+            if (string.IsNullOrWhiteSpace(dto.Description))
             {
-                throw new Utilities.Exceptions.ValidationException("El objeto registro no puede ser nulo");
+                _logger.LogWarning("Intento de crear cambio con descripción vacía");
+                throw new ValidationException("Description", "La descripción del cambio es obligatoria");
             }
 
-            if (string.IsNullOrWhiteSpace(changeLogBusinessDto.Name))
+            if (dto.ChangeDate == default)
             {
-                _logger.LogWarning("Se intentó crear/actualizar un registro con Name vacío");
-                throw new Utilities.Exceptions.ValidationException("Name", "El Name del registro es obligatorio");
+                _logger.LogWarning("Intento de crear cambio sin fecha válida");
+                throw new ValidationException("ChangeDate", "La fecha del cambio es obligatoria");
             }
         }
     }

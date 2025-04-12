@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Entity.DTO
+namespace Entity.Model
 {
-    public class ChangeLogDTO
+    public class ChangeLog
     {
         public int ChangeLogId { get; set; }
         public string Description { get; set; }
